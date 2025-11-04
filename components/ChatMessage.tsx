@@ -46,7 +46,7 @@ export default function ChatMessage({ message, onReaction }: ChatMessageProps) {
         {/* Message Bubble with Timestamp */}
         <div className={`flex items-end gap-2 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
           {/* Bubble */}
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 group">
             <div
               className={`px-4 py-2.5 rounded-2xl ${
                 isUser
@@ -65,23 +65,39 @@ export default function ChatMessage({ message, onReaction }: ChatMessageProps) {
               )}
             </div>
 
-            {/* Reaction Buttons - only for AI messages */}
+            {/* Reaction Section - only for AI messages */}
             {!isUser && onReaction && (
-              <div className="flex gap-1 ml-1">
-                {REACTIONS.map((emoji) => (
-                  <button
-                    key={emoji}
-                    onClick={() => handleReactionClick(emoji)}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-lg transition-all ${
-                      message.reaction === emoji
-                        ? "bg-blue-100 border-2 border-blue-400 scale-110 shadow-sm"
-                        : "bg-white border border-kakao-border hover:bg-kakao-lightGray hover:scale-105"
-                    }`}
-                    title={emoji}
-                  >
-                    {emoji}
-                  </button>
-                ))}
+              <div className="ml-1">
+                {/* Show selected reaction by default */}
+                {message.reaction && (
+                  <div className="flex gap-1 group-hover:hidden">
+                    <button
+                      onClick={() => handleReactionClick(message.reaction!)}
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-lg transition-all bg-blue-100 border-2 border-blue-400 scale-110 shadow-sm"
+                      title={message.reaction}
+                    >
+                      {message.reaction}
+                    </button>
+                  </div>
+                )}
+
+                {/* Show all reactions on hover */}
+                <div className={`gap-1 ${message.reaction ? 'hidden group-hover:flex' : 'hidden group-hover:flex'}`}>
+                  {REACTIONS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      onClick={() => handleReactionClick(emoji)}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-lg transition-all ${
+                        message.reaction === emoji
+                          ? "bg-blue-100 border-2 border-blue-400 scale-110 shadow-sm"
+                          : "bg-white border border-kakao-border hover:bg-kakao-lightGray hover:scale-105"
+                      }`}
+                      title={emoji}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
