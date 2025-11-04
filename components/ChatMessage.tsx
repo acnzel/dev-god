@@ -75,7 +75,12 @@ export default function ChatMessage({ message, onReaction }: ChatMessageProps) {
                 {/* Show selected reaction */}
                 {message.reaction && (
                   <button
-                    onClick={() => handleReactionClick(message.reaction!)}
+                    onClick={() => {
+                      const currentReaction = message.reaction;
+                      if (currentReaction) {
+                        handleReactionClick(currentReaction);
+                      }
+                    }}
                     className="w-8 h-8 rounded-full flex items-center justify-center text-lg transition-all bg-blue-100 border-2 border-blue-400 shadow-sm hover:scale-105"
                     title={message.reaction}
                   >
