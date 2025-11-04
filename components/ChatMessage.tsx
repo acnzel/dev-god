@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { Message } from "@/lib/types";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import MarkdownRenderer from "./MarkdownRenderer";
-import { Bot, User } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 
 interface ChatMessageProps {
   message: Message;
@@ -14,6 +15,7 @@ interface ChatMessageProps {
 const REACTIONS = ["❤️", "👍", "✅", "😊"];
 
 export default function ChatMessage({ message, onReaction }: ChatMessageProps) {
+  const [showReactions, setShowReactions] = useState(false);
   const isUser = message.role === "user";
   const time = format(message.timestamp, "a h:mm", { locale: ko });
 
@@ -25,6 +27,8 @@ export default function ChatMessage({ message, onReaction }: ChatMessageProps) {
     } else {
       onReaction(message.id, reaction);
     }
+    // Close the reaction picker after selection
+    setShowReactions(false);
   };
 
   return (
@@ -46,7 +50,7 @@ export default function ChatMessage({ message, onReaction }: ChatMessageProps) {
         {/* Message Bubble with Timestamp */}
         <div className={`flex items-end gap-2 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
           {/* Bubble */}
-          <div className="flex flex-col gap-1 group">
+          <div className="flex flex-col gap-1">
             <div
               className={`px-4 py-2.5 rounded-2xl ${
                 isUser
@@ -67,37 +71,46 @@ export default function ChatMessage({ message, onReaction }: ChatMessageProps) {
 
             {/* Reaction Section - only for AI messages */}
             {!isUser && onReaction && (
-              <div className="ml-1">
-                {/* Show selected reaction by default */}
+              <div className="ml-1 flex gap-1 items-center">
+                {/* Show selected reaction */}
                 {message.reaction && (
-                  <div className="flex gap-1 group-hover:hidden">
-                    <button
-                      onClick={() => handleReactionClick(message.reaction!)}
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-lg transition-all bg-blue-100 border-2 border-blue-400 scale-110 shadow-sm"
-                      title={message.reaction}
-                    >
-                      {message.reaction}
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => handleReactionClick(message.reaction!)}
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-lg transition-all bg-blue-100 border-2 border-blue-400 shadow-sm hover:scale-105"
+                    title={message.reaction}
+                  >
+                    {message.reaction}
+                  </button>
                 )}
 
-                {/* Show all reactions on hover */}
-                <div className={`gap-1 ${message.reaction ? 'hidden group-hover:flex' : 'hidden group-hover:flex'}`}>
-                  {REACTIONS.map((emoji) => (
-                    <button
-                      key={emoji}
-                      onClick={() => handleReactionClick(emoji)}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-lg transition-all ${
-                        message.reaction === emoji
-                          ? "bg-blue-100 border-2 border-blue-400 scale-110 shadow-sm"
-                          : "bg-white border border-kakao-border hover:bg-kakao-lightGray hover:scale-105"
-                      }`}
-                      title={emoji}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
+                {/* More button to toggle reaction picker */}
+                <button
+                  onClick={() => setShowReactions(!showReactions)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center transition-all bg-white border border-kakao-border hover:bg-kakao-lightGray hover:scale-105"
+                  title="이모지 추가"
+                >
+                  <MoreHorizontal className="w-4 h-4 text-kakao-darkGray" />
+                </button>
+
+                {/* Reaction picker - show when clicked */}
+                {showReactions && (
+                  <div className="flex gap-1">
+                    {REACTIONS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        onClick={() => handleReactionClick(emoji)}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-lg transition-all ${
+                          message.reaction === emoji
+                            ? "bg-blue-100 border-2 border-blue-400 scale-110 shadow-sm"
+                            : "bg-white border border-kakao-border hover:bg-kakao-lightGray hover:scale-105"
+                        }`}
+                        title={emoji}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
