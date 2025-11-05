@@ -13,12 +13,20 @@ export default function ChatInterface() {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const currentConversation = conversations.find((c) => c.id === currentConversationId);
 
-  // Load state from localStorage on mount
+  // Mark component as mounted (client-side only)
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Load state from localStorage only after mounting
+  useEffect(() => {
+    if (!isMounted) return;
+
     const state = storage.loadState();
     setConversations(state.conversations);
     setCurrentConversationId(state.currentConversationId);
@@ -29,12 +37,13 @@ export default function ChatInterface() {
       setConversations([newConv]);
       setCurrentConversationId(newConv.id);
     }
-  }, []);
+  }, [isMounted]);
 
-  // Save state to localStorage whenever it changes
+  // Save state to localStorage whenever it changes (skip if not mounted yet)
   useEffect(() => {
+    if (!isMounted) return;
     storage.saveState({ conversations, currentConversationId });
-  }, [conversations, currentConversationId]);
+  }, [conversations, currentConversationId, isMounted]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -179,6 +188,11 @@ export default function ChatInterface() {
     const updatedConv = storage.updateMessageReaction(conversation, messageId, reaction);
     setConversations((prev) => prev.map((c) => (c.id === updatedConv.id ? updatedConv : c)));
   };
+
+  // Show nothing during SSR to avoid hydration mismatch
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <div className="flex h-screen bg-kakao-bg">
